@@ -13,62 +13,72 @@ var nodemon = require('gulp-nodemon');
  * Clean dist folder
  */
 gulp.task('clean', function(cb) {
-  del(['dist/**/*'], cb)
-});
-
-/**
- * prepare task before start program
- */
-gulp.task('prepare', ['clean'], function(){
-  gulp.start('coffee', 'copy');
+  del(['dist/**/*.js', 'dist/**/*.json'], cb);
 });
 
 
 /**
  * compile coffee script
  */
-gulp.task('coffee', function() {
-  gulp.src('./src/**/*.coffee')
+gulp.task('coffee', ['clean'], function() {
+  return gulp.src('./src/**/*.coffee')
     .pipe(coffee({bare: true}).on('error', gutil.log))
     .pipe(gulp.dest('./dist/'))
-    .pipe(notify({message: "Compiler coffee complete."}))
+    .pipe(notify({message: "Compiler coffee complete."}));
 });
 
 /**
  * copy some project file
  */
-gulp.task('copy', function() {
-  gulp.src('./src/config.json')
+gulp.task('copy', ['clean'], function() {
+  return gulp.src('./src/config.json')
     .pipe(gulp.dest('./dist/'))
-    .pipe(notify({message: "Copy file complete."}))
+    .pipe(notify({message: "Copy file complete."}));
 });
 
 /**
- * start server
+ * build
  */
-gulp.task('develop', function () {
-  nodemon(
-    {
-      script: 'dist/index.js',
-      ext: 'coffee json js',
-      ignore: [
-        "node_modules/**/node_modules"
-      ],
-      nodeArgs: ['--debug'],
-      watch: [
-        "src/"
-      ]
-    })
-    .on('change', ['prepare'])
-    .on('restart', function () {
-      notify({message: "Start server."})
-    })
+gulp.task('build', ['clean', 'coffee', 'copy']);
+
+
+/**
+ * start server
+ * do not using nodemon to watch file.
+ */
+var nodemon_instance;
+
+gulp.task('serve', function () {
+  if(!nodemon_instance){
+    nodemon_instance = nodemon(
+      {
+        script: 'dist/index.js',
+        ext: 'none'
+      })
+      .on('restart', function () {
+        console.log("restart server......................")
+      });
+  } else{
+    nodemon_instance.emit("restart");
+  }
+
+});
+
+gulp.task('serve_watch', ['serve'], function() {
+  return gulp.watch('src/**/*', ['restart']);
 });
 
 
 /**
  * default task
  */
-gulp.task('default', ['prepare'], function(){
-  gulp.start('develop');
+gulp.task('default', ['build'], function(){
+  gulp.start('serve_watch');
+});
+
+/**
+ * task when files change
+ */
+gulp.task('restart', ['build'], function(){
+  gulp.start('serve');
 });
