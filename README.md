@@ -8,6 +8,7 @@ Current this templates include these task:
 * Remove files in output folder.
 * Compile coffee scripts.
 * Copy other project files to output folder.
+* Replace source code with command line arguments.
 * Start program and auto restart when file changed.
 
 ## How to Use
@@ -25,6 +26,8 @@ npm install gulp-coffee --save-dev
 npm install gulp-nodemon --save-dev
 npm install gulp-notify --save-dev
 npm install gulp-util --save-dev
+npm install gulp-replace --save-dev
+npm install yargs --save-dev
 ```
 
 Modify task scripts if something differents. 
@@ -32,14 +35,7 @@ Modify task scripts if something differents.
 Run task in command line:
 
 ```
-gulp
-```
-
-In debug mode
-
-
-```
-gulp --debug
+gulp --port=8888
 ```
 
 ## License

@@ -4,7 +4,9 @@ config = require("./config")
 
 server = http.createServer handler
 
-server.listen config.port
+port = port_for_argv
 
-console.log "Service start at #{config.port}..."
+server.listen port
+
+console.log "Service: #{config.name} start at #{port}..."
 

@@ -8,6 +8,8 @@ var gutil = require('gulp-util');
 var del = require('del');
 var notify = require('gulp-notify');
 var nodemon = require('gulp-nodemon');
+var replace = require('gulp-replace');
+var argv = require('yargs').argv;
 
 /**
  * Clean dist folder
@@ -21,7 +23,9 @@ gulp.task('clean', function(cb) {
  * compile coffee script
  */
 gulp.task('coffee', ['clean'], function() {
+  var port = argv.port || 8201
   return gulp.src('./src/**/*.coffee')
+    .pipe(replace("port_for_argv", port))
     .pipe(coffee({bare: true}).on('error', gutil.log))
     .pipe(gulp.dest('./dist/'))
     .pipe(notify({message: "Compiler coffee complete."}));
