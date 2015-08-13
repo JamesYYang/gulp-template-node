@@ -23,8 +23,8 @@ Install npm packages
 ```
 npm install del --save-dev
 npm install gulp-coffee --save-dev
-npm install gulp-nodemon --save-dev
-npm install gulp-notify --save-dev
+npm install gulp-develop-server --save-dev
+npm install run-sequence --save-dev
 npm install gulp-util --save-dev
 npm install gulp-replace --save-dev
 npm install yargs --save-dev
