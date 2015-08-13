@@ -8,5 +8,5 @@ port = port_for_argv
 
 server.listen port
 
-console.log "Service: #{config.name} start at #{port}..."
+console.log "Server: #{config.name} start at #{port}..."
 

@@ -6,10 +6,10 @@ var gulp = require('gulp');
 var coffee = require('gulp-coffee');
 var gutil = require('gulp-util');
 var del = require('del');
-var notify = require('gulp-notify');
-var nodemon = require('gulp-nodemon');
 var replace = require('gulp-replace');
 var argv = require('yargs').argv;
+var server = require( 'gulp-develop-server' );
+var runSequence = require('run-sequence');
 
 /**
  * Clean dist folder
@@ -22,67 +22,66 @@ gulp.task('clean', function(cb) {
 /**
  * compile coffee script
  */
-gulp.task('coffee', ['clean'], function() {
+gulp.task('coffee', function() {
   var port = argv.port || 8201
   return gulp.src('./src/**/*.coffee')
     .pipe(replace("port_for_argv", port))
     .pipe(coffee({bare: true}).on('error', gutil.log))
-    .pipe(gulp.dest('./dist/'))
-    .pipe(notify({message: "Compiler coffee complete."}));
+    .pipe(gulp.dest('./dist/'));
 });
 
 /**
  * copy some project file
  */
-gulp.task('copy', ['clean'], function() {
+gulp.task('copy', function() {
   return gulp.src('./src/config.json')
-    .pipe(gulp.dest('./dist/'))
-    .pipe(notify({message: "Copy file complete."}));
+    .pipe(gulp.dest('./dist/'));
 });
-
-/**
- * build
- */
-gulp.task('build', ['clean', 'coffee', 'copy']);
 
 
 /**
  * start server
- * do not using nodemon to watch file.
  */
-var nodemon_instance;
-
 gulp.task('serve', function () {
-  if(!nodemon_instance){
-    nodemon_instance = nodemon(
-      {
-        script: 'dist/index.js',
-        ext: 'none'
-      })
-      .on('restart', function () {
-        console.log("restart server......................")
-      });
-  } else{
-    nodemon_instance.emit("restart");
-  }
-
+  server.listen(
+    {
+      path: 'dist/index.js',
+      execArgv: ['--harmony'] //for ES6
+    });
 });
 
-gulp.task('serve_watch', ['serve'], function() {
-  return gulp.watch('src/**/*', ['restart']);
+gulp.task('server-restart', function(){
+  server.restart();
+})
+
+/**
+ * Watch files
+ */
+gulp.task('watch', function(){
+  gulp.watch([
+    'src/**/*.coffee',
+    'src/**/*.js'
+    ], {debounceDelay: 2000}, ['reload'])
+});
+
+/**
+ * restart server when file changes
+ */
+gulp.task('reload', function(callback){
+  runSequence('clean',
+    ['copy', 'coffee'],
+    'server-restart',
+    callback);
 });
 
 
 /**
  * default task
  */
-gulp.task('default', ['build'], function(){
-  gulp.start('serve_watch');
-});
-
-/**
- * task when files change
- */
-gulp.task('restart', ['build'], function(){
-  gulp.start('serve');
+gulp.task('default', function(callback){
+  runSequence('clean',
+    ['copy', 'coffee'],
+    'serve',
+    'watch',
+    callback);
 });
